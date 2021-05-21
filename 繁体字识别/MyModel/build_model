@@ -1,0 +1,42 @@
+from keras.models import Sequential
+from keras.layers.convolutional import Conv2D, MaxPooling2D
+from keras.layers.core import Flatten, Dense
+from keras import optimizers
+class WM:
+    def __init__(self):
+        self.model=self.build_model()
+    def build_model(self):
+        model = Sequential()
+        # First convolutional layer with max pooling
+        model.add(Conv2D(64, (3, 3), padding="same", input_shape=(64, 64, 3), activation="relu"))
+        model.add(Conv2D(64, (3, 3), padding="valid", activation="relu"))
+        # model.add(Conv2D(64, (3, 3), padding="same", activation="relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        # Second convolutional layer with max pooling
+        model.add(Conv2D(128, (3, 3), padding="valid", activation="relu"))
+        model.add(Conv2D(128, (3, 3), padding="valid", activation="relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+        # Third convolutional layer with max pooling
+        model.add(Conv2D(256, (3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(256, (3, 3), padding="valid", activation="relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        # Forth convolutional layer with max pooling
+        model.add(Conv2D(512, (3, 3), padding="same", activation="relu"))
+        model.add(Conv2D(512, (3, 3), padding="valid", activation="relu"))
+        # model.add(Conv2D(512, (3, 3), padding="same", activation="relu"))
+        model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
+
+        # Hidden layer with 500 nodes
+        model.add(Flatten())
+
+        model.add(Dense(4096, activation="relu"))
+
+        # Output layer with 32 nodes (one for each possible letter/number we predict)
+        model.add(Dense(10, activation="softmax"))
+
+        # Ask Keras to build the TensorFlow model behind the scenes
+        sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
+        model.compile(loss="categorical_crossentropy", optimizer=sgd, metrics=["accuracy"])
+        return model
