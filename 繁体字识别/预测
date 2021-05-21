@@ -6,7 +6,7 @@ import numpy as np
 wm = WM()
 model = wm.model
 # 载入权重
-model.load_weights('./model_weight_10.h5')
+model.load_weights('./model_weight_520.h5')
 
 test_image = cv2.resize(cv2.imread('test.jpg'),(64,64))
 test_image = np.asarray(test_image.astype("float32"))
