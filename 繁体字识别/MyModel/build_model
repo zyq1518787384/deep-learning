@@ -34,7 +34,7 @@ class WM:
         model.add(Dense(4096, activation="relu"))
 
         # Output layer with 32 nodes (one for each possible letter/number we predict)
-        model.add(Dense(10, activation="softmax"))
+        model.add(Dense(3495, activation="softmax"))
 
         # Ask Keras to build the TensorFlow model behind the scenes
         sgd = optimizers.SGD(lr=0.001, decay=1e-6, momentum=0.9, nesterov=True)
