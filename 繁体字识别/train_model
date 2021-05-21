@@ -1,0 +1,93 @@
+from keras.preprocessing.image import ImageDataGenerator
+import keras
+from MyModel.build_model import WM
+from keras.models import load_model
+import matplotlib.pyplot as plt
+import sys
+# model_path = './model_10.h5'
+model_weight_path = './model_weight_10.h5'
+epochs=20
+image_size=(64,64)
+class TensorBoardWrapper(keras.callbacks.TensorBoard):
+    def __init__(self, batch_gen, nb_steps, **kwargs):
+        super().__init__(**kwargs)
+        self.batch_gen = batch_gen # The generator.
+        self.nb_steps = nb_steps     # Number of times to call next() on the generator.在生成器上调用next（）的次数。
+
+    # def on_epoch_end(self, epoch, logs):
+    #     imgs, tags = None, None
+    #     for s in range(self.nb_steps):
+    #         ib, tb = next(self.batch_gen)
+    #         if imgs is None and tags is None:
+    #             imgs = np.zeros((self.nb_steps * ib.shape[0], *ib.shape[1:]), dtype=np.float32)
+    #             tags = np.zeros((self.nb_steps * tb.shape[0], *tb.shape[1:]), dtype=np.uint8)
+    #         imgs[s * ib.shape[0]:(s + 1) * ib.shape[0]] = ib
+    #         tags[s * tb.shape[0]:(s + 1) * tb.shape[0]] = tb
+    #     self.validation_data = [imgs, tags, np.ones(imgs.shape[0])]
+    #     return super().on_epoch_end(epoch, logs)
+
+def training_vis(hist):
+    loss = hist.history['loss']
+    val_loss = hist.history['val_loss']
+    acc = hist.history['accuracy']  # new version => hist.history['accuracy']
+    val_acc = hist.history['val_accuracy'] #=> hist.history['val_accuracy']
+    # make a figure
+    fig = plt.figure(figsize=(8,4))
+    # subplot loss
+    ax1 = fig.add_subplot(121)
+    ax1.plot(loss,label='train_loss')
+    ax1.plot(val_loss,label='val_loss')
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('Loss')
+    ax1.set_title('Loss on Training and Validation Data')
+    ax1.legend()
+    # subplot acc
+    ax2 = fig.add_subplot(122)
+    ax2.plot(acc,label='train_acc')
+    ax2.plot(val_acc,label='val_acc')
+    ax2.set_xlabel('Epochs')
+    ax2.set_ylabel('Accuracy')
+    ax2.set_title('Accuracy  on Training and Validation Data')
+    ax2.legend()
+    plt.tight_layout()
+
+
+# model = load_model(model_path) #载入模型
+
+wm = WM()
+model = wm.model
+model.load_weights(model_weight_path) #载入权重
+
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=0,
+    width_shift_range=0.1,
+    height_shift_range=0.1
+)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+        'data/train',
+        target_size=image_size,
+        batch_size=32,
+        class_mode='categorical')
+
+validation_generator = test_datagen.flow_from_directory(
+        'data/val',
+        target_size=image_size,
+        batch_size=32,
+        class_mode='categorical')
+
+hist=model.fit(
+        train_generator,
+        steps_per_epoch=75,
+        epochs=epochs,
+        validation_data=validation_generator,
+        validation_steps=19,
+        callbacks=[TensorBoardWrapper(validation_generator, nb_steps=5, log_dir="./logs", histogram_freq=1,
+                               batch_size=32, write_graph=False, write_grads=True)])
+
+
+model.save_weights(model_weight_path)   #保存权重
+# model.save(model_path)    #保存模型
+training_vis(hist)
