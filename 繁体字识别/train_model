@@ -50,7 +50,7 @@ def training_vis(hist):
     ax2.set_title('Accuracy  on Training and Validation Data')
     ax2.legend()
     plt.tight_layout()
-
+    plt.show()
 
 # model = load_model(model_path) #载入训练好的模型,进行再训练
 # 如果是第一次训练.只需要执行wm.model,载入空模型
